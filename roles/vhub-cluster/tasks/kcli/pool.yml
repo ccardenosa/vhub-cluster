@@ -1,0 +1,33 @@
+---
+- name: Create libvirt networks
+  when: libvirt.pool.name is defined and
+        libvirt.pool.path is defined
+  block:
+
+  - name: Determine if pool folder exists
+    ansible.builtin.stat:
+      path: "{{libvirt.pool.path}}"
+    register: image_pool_folder
+
+  - name: Create KCLI image pool
+    become: true
+    when: image_pool_folder.stat.islnk is not defined
+    ansible.builtin.shell: |-
+      echo "Creating Libvirt default pool..."
+      kcli create pool -p {{libvirt.pool.path}} {{libvirt.pool.name}}
+
+  # $ ansible-galaxy collection install ansible.posix
+  - name: Set ACL information to image pool folder
+    become: true
+    when: ansible_user_id != 'root' and image_pool_folder.stat.islnk is defined
+    ansible.posix.acl:
+      path: "{{libvirt.pool.path}}"
+      entity: "{{ ansible_user_id }}"
+      etype: user
+      permissions: rwx
+      state: present
+
+  - name: Show KCLI image pool
+    ansible.builtin.shell: |
+      kcli list pools
+      getfacl -e {{libvirt.pool.path}}

@@ -1,0 +1,59 @@
+---
+- name: Create libvirt networks
+  when: kcli.network_plan is defined
+  block:
+
+    - name: Setup Linux kernel to support IPv6 and IP forwarding
+      become: true
+      block:
+
+        - name: Accept RA packets to configure IPv6
+          ansible.posix.sysctl:
+            name: net.ipv6.conf.all.accept_ra
+            value: '2'
+            state: present
+
+        - name: Enable IPv6 forwarding in all interfaces
+          ansible.posix.sysctl:
+            name: net.ipv6.conf.all.forwarding
+            value: '1'
+            state: present
+
+        - name: Disable IPv6 address in loopback interface
+          ansible.posix.sysctl:
+            name: net.ipv6.conf.lo.disable_ipv6
+            value: '0'
+            state: present
+
+        - name: Enable IPv4 forwarding in all interfaces
+          ansible.posix.sysctl:
+            name: net.ipv4.conf.all.forwarding
+            value: '1'
+            state: present
+
+    - name: Create temporary kcli plan file
+      ansible.builtin.tempfile:
+        state: file
+        prefix: kcli_plan_
+        suffix: .yml
+      register: kcli_plan_yaml
+
+    - name: Create libvirt networks
+      ansible.builtin.shell: |-
+        cat << EOF > {{kcli_plan_yaml.path}}
+        {{kcli.network_plan | to_nice_yaml}}
+        EOF
+        kcli create plan -f {{kcli_plan_yaml.path}} {{kcli.parameters.cluster}}_nets
+
+    - name: Show networks
+      ansible.builtin.shell: |-
+        kcli list networks
+
+  always:
+
+    - name: Remove temporaty kcli plan file
+      ansible.builtin.file:
+        path: "{{item}}"
+        state: absent
+      loop:
+        - "{{kcli_plan_yaml.path}}"

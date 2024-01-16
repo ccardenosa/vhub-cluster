@@ -1,0 +1,23 @@
+---
+# tasks file for vhub-cluster
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/setup_module.html
+- name: Filter and return only selected facts
+  ansible.builtin.setup:
+    filter:
+      - 'ansible_os_family'
+      - 'ansible_user_id'
+
+- name: Install dependencies
+  ansible.builtin.include_tasks: install-dependencies.yml
+
+- name: Set up kcli at Bastion node
+  ansible.builtin.include_tasks: "{{task}}"
+  loop:
+    - kcli/pool.yml
+    - kcli/networks.yml
+    - kcli/ssh-keys.yml
+    - kcli/deploy-cluster.yml
+    - kcli/get-cluster-credentials.yml
+  loop_control:
+    loop_var: task

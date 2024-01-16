@@ -1,0 +1,44 @@
+---
+# defaults file for vhub-cluster
+ssh_key:
+  filename: ~/.ssh/id_rsa_for_vhub_cluster
+  size: 2048
+libvirt:
+  pool:
+    name: default
+    path: /var/lib/libvirt/images
+kcli:
+  network_plan:
+    baremetal:
+      type: network
+      domain: example.lab
+      cidr: 172.16.33.0/24
+      secondary_cidr: fc00:52:0:1305::0/64
+      gateway: 172.16.33.1
+  parameters:
+    cluster: vhub-ocp
+    version: stable
+    tag: 4.14
+    domain: "{{kcli.plan.baremetal.domain}}"
+    pool: "{{libvirt.pool.name}}"
+    nets:
+      - baremetal
+    keys:
+      - "{{ssh_key.filename}}.pub"
+    ctlplanes: 3
+    workers: 0
+    memory: 16384
+    numcpus: 4
+    disk_size: 30
+    pull_secret: ~/.docker/config.json
+    apps:
+      - local-storage-operator
+      - openshift-gitops-operator
+      - advanced-cluster-management
+      - topology-aware-lifecycle-manager
+oc:
+  url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
+  dest: /usr/bin
+k8s:
+  kubeconfig: ~/.kcli/clusters/{{kcli.parameters.cluster}}/auth/kubeconfig
+  kubeadmin_password: ~/.kcli/clusters/{{kcli.parameters.cluster}}/auth/kubeadmin-password

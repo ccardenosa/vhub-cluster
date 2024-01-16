@@ -1,0 +1,37 @@
+---
+- name: Test Role playbook
+  hosts:
+    - bastion-vhub-node
+  gather_facts: false
+  roles:
+    - vhub-cluster
+  vars:
+    kcli:
+      network_plan:
+        baremetal:
+          type: network
+          domain: "{{ lookup('ansible.builtin.env', 'CLUSTER_DOMAIN') }}"
+          cidr: "{{ lookup('ansible.builtin.env', 'CLUSTER_NET_CIDR_IPv4') }}"
+          gateway: "{{ lookup('ansible.builtin.env', 'CLUSTER_NET_CIDR_IPv4') | ansible.utils.ipaddr('1') | ansible.utils.ipaddr('address') }}"
+          secondary_cidr: "{{ lookup('ansible.builtin.env', 'CLUSTER_NET_CIDR_IPv6') }}"
+      parameters:
+        cluster: "{{ lookup('ansible.builtin.env', 'CLUSTER_NAME') }}"
+        version: "{{ lookup('ansible.builtin.env', 'CLUSTER_VERSION') }}"
+        tag: "{{ lookup('ansible.builtin.env', 'CLUSTER_TAG') }}"
+        domain: "{{ lookup('ansible.builtin.env', 'CLUSTER_DOMAIN') }}"
+        pool: "{{libvirt.pool.name}}"
+        nets:
+          - baremetal
+        keys:
+          - "{{ lookup('ansible.builtin.env', 'CLUSTER_SSH_PUB_KEY') }}"
+        ctlplanes: 3
+        workers: 0
+        memory: 16384
+        numcpus: 4
+        disk_size: 30
+        pull_secret: "{{ lookup('ansible.builtin.env', 'CLUSTER_PULL_SECRET') }}"
+        apps:
+          - local-storage-operator
+          - openshift-gitops-operator
+          - advanced-cluster-management
+          - topology-aware-lifecycle-manager

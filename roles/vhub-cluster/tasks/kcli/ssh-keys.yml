@@ -1,0 +1,6 @@
+---
+- name: Generate SSH keys
+  when: ssh_key.filename is defined
+  community.crypto.openssh_keypair:
+    path: "{{ssh_key.filename}}"
+    size: "{{ssh_key.size | default(2048)}}"
