@@ -1,4 +1,20 @@
 ---
+- name: Delete libvirt pool
+  when: libvirt.pool.name is defined and
+        ('rollback' in ansible_run_tags)
+  tags:
+    - rollback
+  block:
+
+    - name: Deleting libvirt pool (if this is NOT the 'default' pool)
+      become: true
+      when: libvirt.pool.name != 'default'
+      ansible.builtin.shell: |-
+        kcli delete pool {{libvirt.pool.name}} --yes
+        rm -fr {{libvirt.pool.path}}
+      register: del_pool_ret
+      changed_when: del_pool_ret.stdout != ''
+
 - name: Create libvirt networks
   when: libvirt.pool.name is defined and
         libvirt.pool.path is defined
@@ -14,6 +30,7 @@
     when: image_pool_folder.stat.islnk is not defined
     ansible.builtin.shell: |-
       echo "Creating Libvirt default pool..."
+      mkdir -pv {{libvirt.pool.path}}
       kcli create pool -p {{libvirt.pool.path}} {{libvirt.pool.name}}
 
   # $ ansible-galaxy collection install ansible.posix

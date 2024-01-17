@@ -6,7 +6,7 @@
     - rollback
   block:
 
-    - name: Deleting libvirt networks networks
+    - name: Deleting libvirt networks
       ansible.builtin.shell: |-
         kcli delete network {{network.name}} --yes
       register: del_net_ret
@@ -49,7 +49,7 @@
             value: '1'
             state: present
 
-    - name: Create temporary kcli plan file
+    - name: Create temporary kcli network parameter file
       ansible.builtin.tempfile:
         state: directory
         prefix: kcli_networks_
@@ -72,7 +72,7 @@
 
   always:
 
-    - name: Remove temporaty kcli plan file
+    - name: Remove temporaty kcli network parameter file
       ansible.builtin.file:
         path: "{{item}}"
         state: absent

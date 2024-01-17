@@ -19,6 +19,7 @@
   loop:
     - kcli/deploy-cluster.yml
     - kcli/networks.yml
+    - kcli/pool.yml
   loop_control:
     loop_var: task
 

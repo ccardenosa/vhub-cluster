@@ -1,45 +1,97 @@
 ---
 # defaults file for vhub-cluster
-ssh_key:
-  filename: ~/.ssh/id_rsa_for_vhub_cluster
-  size: 2048
+#######################################################
+# Comment out these lines to autogenerate a pair of
+# SSH both public and private keys to be used during
+# cluster deployment.
+#######################################################
+# ssh_key:
+#   filename: ~/.ssh/id_rsa_for_vhub_cluster
+#   size: 2048
+#######################################################
+# Set the default libvirt pool to use.
+# Note: KCLI seems to select always the default pool
+# when "kcli create cluster openshift" command is used.
+# Do not use another pool but the one you have named
+# 'default'.
+#######################################################
 libvirt:
   pool:
     name: default
     path: /var/lib/libvirt/images
-kcli:
-  networks:
-    - name: vhub-net
-      type: network
-      domain: example.lab
-      cidr: 172.16.33.0/24
-      secondary_cidr: fc00:52:0:1305::0/64
-      gateway: 172.16.33.1
-  parameters:
-    cluster: vhub-ocp
-    version: stable
-    tag: 4.14
-    domain: "{{kcli.plan.baremetal.domain}}"
-    pool: "{{libvirt.pool.name}}"
-    nets:
-      - vhub-net
-    keys:
-      - "{{ssh_key.filename}}.pub"
-    ctlplanes: 3
-    workers: 0
-    memory: 16384
-    numcpus: 4
-    disk_size: 30
-    base64_pull_secret: null
-    pull_secret: ~/.docker/config.json
-    apps:
-      - local-storage-operator
-      - openshift-gitops-operator
-      - advanced-cluster-management
-      - topology-aware-lifecycle-manager
-oc:
-  url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
-  dest: /usr/bin
+#######################################################
+# Use the below parameters as a example.
+# The comprehensive list of values can be found here:
+# https://kcli.readthedocs.io/en/latest/
+# KCLI Slack channel:
+# https://kubernetes.slack.com/archives/CU76B52JE
+#######################################################
+# kcli:
+#   networks:
+#     - name: vhub-net
+#       type: network
+#       domain: example.lab
+#       cidr: 172.16.33.0/24
+#       secondary_cidr: fc00:52:0:1305::0/64
+#       gateway: 172.16.33.1
+#     - name: vhub-br-net
+#       bridge: true
+#       bridgename: virbr0
+#     - name: vhub-macvtap-net
+#       macvtap: true
+#       nic: eth0
+#   # Only parameters that make sense for the below command:
+#   # kcli create cluster openshift --paramfile=parameters.yml
+#   parameters:
+#     cluster: vhub-ocp
+#     version: stable
+#     tag: 4.14
+#     domain: example.lab
+#     pool: "{{libvirt.pool.name}}"
+#     nets:
+#       - vhub-net
+#       - vhub-br-net
+#       - vhub-macvtap-net
+#     keys:
+#       - "{{ssh_key.filename}}.pub"
+#     # api_ip: 172.16.33.5
+#     # ingress_ip: 172.16.33.6
+#     ctlplanes: 3
+#     workers: 0
+#     memory: 16384
+#     numcpus: 4
+#     disk_size: 30
+#     # IMPORTANT:
+#     # If you decided to set you pull_secret file
+#     # as base64 string using 'base64_pull_secret'
+#     # parameter, it will take precedent over
+#     # 'pull_secret' paramater.
+#     # Note that 'base64_pull_secret' parameter is
+#     # not part of KCLI
+#     base64_pull_secret: null
+#     pull_secret: ~/.docker/config.json
+#     apps:
+#       - local-storage-operator
+#       - openshift-gitops-operator
+#       - advanced-cluster-management
+#       - topology-aware-lifecycle-manager
+#######################################################
+# Comment out these lines to install both 'oc' and
+# 'kubectl' tools if they are not already installed
+#######################################################
+# oc:
+#   url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
+#   dest: /usr/bin
+#######################################################
+# KCLI default credentials are the below ones.
+# These files are read after cluster deployment is
+# done and store as ansible_facts into the following
+# variables to be used by next playbooks:
+#
+# - kubeconfig
+# - b64_kubeconfig
+# - kubeadmin_password
+#######################################################
 k8s:
   kubeconfig: ~/.kcli/clusters/{{kcli.parameters.cluster}}/auth/kubeconfig
   kubeadmin_password: ~/.kcli/clusters/{{kcli.parameters.cluster}}/auth/kubeadmin-password

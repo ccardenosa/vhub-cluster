@@ -14,7 +14,7 @@
 - name: Deploy openshift cluster
   block:
 
-    - name: Create temporary kcli plan file
+    - name: Create temporary kcli cluster parameter file
       ansible.builtin.tempfile:
         state: directory
         prefix: kcli_
@@ -34,40 +34,46 @@
           {% set _ = kcli.parameters.update({'base64_pull_secret': None, 'pull_secret': (kcli_tempdir.path + "/pull_secret.yml")}) %}
           {{kcli}}
 
-    - name: Create a k8s cluster
+    - name: Update KCLI 'pull_secret' paramater
       when: kcli.parameters.base64_pull_secret is defined
       ansible.builtin.command: |-
         echo "{{kcli.parameters.base64_pull_secret}}" > {{kcli_tempdir.path}}/pull_secret.yml
 
     - name: Create a k8s cluster
       ansible.builtin.shell: |-
-        cat << EOF > {{kcli_tempdir.path}}/plan.yml
+        cat << EOF > {{kcli_tempdir.path}}/cluster_parameters.yml
         {{kcli.parameters | to_nice_yaml}}
         EOF
-        kcli create cluster openshift --paramfile={{kcli_tempdir.path}}/plan.yml
-      async: 7200
+        kcli create cluster openshift \
+          -P pool="{{libvirt.pool.name}}" \
+          --paramfile={{kcli_tempdir.path}}/cluster_parameters.yml
+      async: 14400
       poll: 0
-      register: kcli_plan
+      register: kcli_cluster
+      changed_when: false
 
-    - name: Show cluster installation progess
+    - name: Check cluster installation progess
       async_status:
-        jid: "{{kcli_plan.ansible_job_id}}"
+        jid: "{{kcli_cluster.ansible_job_id}}"
       register: kcli_job_result
       until: kcli_job_result.finished
       retries: 120
-      delay: 60
+      delay: 120
+      changed_when: kcli_job_result.rc == 0
+      failed_when: kcli_job_result.rc not in [0,1]
 
     - name: Show installed cluster
       changed_when: false
       ansible.builtin.shell: |-
-        kcli list plan
         kcli list cluster
+        kcli list plan
         kcli list vms
-        oc --kubeconfig ~/.kcli/clusters/{{kcli.parameters.cluster}}/auth/kubeconfig get node -owide
+        which oc 2> /dev/null && \
+          oc --kubeconfig ~/.kcli/clusters/{{kcli.parameters.cluster}}/auth/kubeconfig get node -owide
 
   always:
 
-    - name: Remove temporaty kcli plan file
+    - name: Remove temporaty kcli cluster parameter file
       ansible.builtin.file:
         path: "{{item}}"
         state: absent
