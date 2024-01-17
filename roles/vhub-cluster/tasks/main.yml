@@ -11,6 +11,17 @@
 - name: Install dependencies
   ansible.builtin.include_tasks: install-dependencies.yml
 
+- name: Clean up at Bastion node
+  ansible.builtin.include_tasks: "{{task}}"
+  when: "'rollback' in ansible_run_tags"
+  tags:
+    - rollback
+  loop:
+    - kcli/deploy-cluster.yml
+    - kcli/networks.yml
+  loop_control:
+    loop_var: task
+
 - name: Set up kcli at Bastion node
   ansible.builtin.include_tasks: "{{task}}"
   loop:

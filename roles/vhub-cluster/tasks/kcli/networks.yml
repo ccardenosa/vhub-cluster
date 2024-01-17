@@ -1,4 +1,22 @@
 ---
+- name: Delete libvirt networks
+  when: kcli.networks is defined and
+        ('rollback' in ansible_run_tags)
+  tags:
+    - rollback
+  block:
+
+    - name: Deleting libvirt networks networks
+      ansible.builtin.shell: |-
+        kcli delete network {{network.name}} --yes
+      register: del_net_ret
+      changed_when: del_net_ret.stdout != ''
+      failed_when: |-
+        'is being used by' in del_net_ret.stderr
+      loop: "{{kcli.networks}}"
+      loop_control:
+        loop_var: network
+
 - name: Create libvirt networks
   when: kcli.networks is defined
   block:

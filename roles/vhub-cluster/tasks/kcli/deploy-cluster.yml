@@ -1,4 +1,16 @@
 ---
+- name: Rollback openshift cluster
+  when: "'rollback' in ansible_run_tags"
+  tags:
+    - rollback
+  block:
+
+    - name: Deleting '{{kcli.parameters.cluster}}' cluster
+      ansible.builtin.shell: |-
+        kcli delete cluster {{kcli.parameters.cluster}} --yes
+      register: del_cluster_ret
+      changed_when: del_cluster_ret.stdout != ''
+
 - name: Deploy openshift cluster
   block:
 
