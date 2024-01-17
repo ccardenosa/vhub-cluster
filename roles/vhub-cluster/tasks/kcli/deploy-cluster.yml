@@ -4,17 +4,35 @@
 
     - name: Create temporary kcli plan file
       ansible.builtin.tempfile:
-        state: file
-        prefix: kcli_plan_
-        suffix: .yml
-      register: kcli_plan_yaml
+        state: directory
+        prefix: kcli_
+      register: kcli_tempdir
+
+    - name: Dump base64 pull_secret to a local temporary file
+      when: kcli.parameters.base64_pull_secret is defined
+      ansible.builtin.shell: |-
+        echo "{{kcli.parameters.base64_pull_secret}}" | base64 -d > {{kcli_tempdir.path}}/pull_secret.yml
+
+    - name: Update pull_secret path to the dumped local temporary file
+      when: kcli.parameters.base64_pull_secret is defined
+      ansible.builtin.set_fact:
+        kcli: "{{updated_kcli}}"
+      vars:
+        updated_kcli: |-
+          {% set _ = kcli.parameters.update({'base64_pull_secret': None, 'pull_secret': (kcli_tempdir.path + "/pull_secret.yml")}) %}
+          {{kcli}}
+
+    - name: Create a k8s cluster
+      when: kcli.parameters.base64_pull_secret is defined
+      ansible.builtin.command: |-
+        echo "{{kcli.parameters.base64_pull_secret}}" > {{kcli_tempdir.path}}/pull_secret.yml
 
     - name: Create a k8s cluster
       ansible.builtin.shell: |-
-        cat << EOF > {{kcli_plan_yaml.path}}
+        cat << EOF > {{kcli_tempdir.path}}/plan.yml
         {{kcli.parameters | to_nice_yaml}}
         EOF
-        kcli create cluster openshift --paramfile={{kcli_plan_yaml.path}}
+        kcli create cluster openshift --paramfile={{kcli_tempdir.path}}/plan.yml
       async: 7200
       poll: 0
       register: kcli_plan
@@ -28,6 +46,7 @@
       delay: 60
 
     - name: Show installed cluster
+      changed_when: false
       ansible.builtin.shell: |-
         kcli list plan
         kcli list cluster
@@ -41,4 +60,4 @@
         path: "{{item}}"
         state: absent
       loop:
-        - "{{kcli_plan_yaml.path}}"
+        - "{{kcli_tempdir.path}}"

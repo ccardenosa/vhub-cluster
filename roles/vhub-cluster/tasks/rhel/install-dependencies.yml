@@ -37,12 +37,23 @@
       state: latest
 
 - name: Install oc tool
-  become: true
+  when: oc.url is defined
   block:
 
+  - name: Check if oc tool is installed
+    ansible.builtin.command: which oc
+    changed_when: false
+    failed_when: oc_installed.rc not in [0,1]
+    register: oc_installed
+
   - name: Install oc tool
+    become: true
+    when: oc_installed.rc not in [ 0 ]
     ansible.builtin.unarchive:
       src: "{{oc.url}}"
-      dest: "{{oc.dest}}"
+      dest: "{{oc.dest | default('/usr/bin')}}"
       mode: "0755"
       remote_src: yes
+      include:
+        - oc
+        - kubectl

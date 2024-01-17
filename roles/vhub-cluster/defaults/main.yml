@@ -8,8 +8,8 @@ libvirt:
     name: default
     path: /var/lib/libvirt/images
 kcli:
-  network_plan:
-    baremetal:
+  networks:
+    - name: vhub-net
       type: network
       domain: example.lab
       cidr: 172.16.33.0/24
@@ -22,7 +22,7 @@ kcli:
     domain: "{{kcli.plan.baremetal.domain}}"
     pool: "{{libvirt.pool.name}}"
     nets:
-      - baremetal
+      - vhub-net
     keys:
       - "{{ssh_key.filename}}.pub"
     ctlplanes: 3
@@ -30,6 +30,7 @@ kcli:
     memory: 16384
     numcpus: 4
     disk_size: 30
+    base64_pull_secret: null
     pull_secret: ~/.docker/config.json
     apps:
       - local-storage-operator

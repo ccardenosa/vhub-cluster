@@ -19,7 +19,7 @@
   # $ ansible-galaxy collection install ansible.posix
   - name: Set ACL information to image pool folder
     become: true
-    when: ansible_user_id != 'root' and image_pool_folder.stat.islnk is defined
+    when: ansible_user_id != 'root'
     ansible.posix.acl:
       path: "{{libvirt.pool.path}}"
       entity: "{{ ansible_user_id }}"
@@ -28,6 +28,7 @@
       state: present
 
   - name: Show KCLI image pool
+    changed_when: false
     ansible.builtin.shell: |
       kcli list pools
       getfacl -e {{libvirt.pool.path}}
