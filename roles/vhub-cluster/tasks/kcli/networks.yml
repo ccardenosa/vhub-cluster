@@ -17,6 +17,12 @@
       loop_control:
         loop_var: network
 
+    - name: Delete libvirt bridges
+      ansible.builtin.include_tasks: ./nmcli.yml
+      loop: "{{kcli.networks}}"
+      loop_control:
+        loop_var: network
+
 - name: Create libvirt networks
   when: kcli.networks is defined
   block:
@@ -55,7 +61,16 @@
         prefix: kcli_networks_
       register: kcli_networks
 
+    - name: Create libvirt bridges
+      ansible.builtin.include_tasks: ./nmcli.yml
+      loop: "{{kcli.networks}}"
+      loop_control:
+        loop_var: network
+
     - name: Create libvirt networks
+      when: not (network.bridge is defined and network.bridge and
+            network.bridgename is defined and
+            network.nic is defined)
       ansible.builtin.shell: |-
         cat << EOF > {{kcli_networks.path}}/{{network.name}}.yml
         {{network | to_nice_yaml}}

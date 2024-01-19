@@ -9,6 +9,11 @@
     kcli:
       networks:
         - name: vhub-net
+          # type: bridge
+          # bridge: true
+          # bridgename: vhub-net-br
+          # macvtap: true
+          # nic: "{{ lookup('ansible.builtin.env', 'CLUSTER_BRIDGE_NIC') }}"
           type: network
           domain: "{{ lookup('ansible.builtin.env', 'CLUSTER_DOMAIN') }}"
           cidr: "{{ lookup('ansible.builtin.env', 'CLUSTER_NET_CIDR_IPv4') }}"

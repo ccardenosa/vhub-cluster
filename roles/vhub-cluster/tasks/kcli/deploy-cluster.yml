@@ -45,7 +45,6 @@
         {{kcli.parameters | to_nice_yaml}}
         EOF
         kcli create cluster openshift \
-          -P pool="{{libvirt.pool.name}}" \
           --paramfile={{kcli_tempdir.path}}/cluster_parameters.yml
       async: 14400
       poll: 0
@@ -60,7 +59,8 @@
       retries: 120
       delay: 120
       changed_when: kcli_job_result.rc == 0
-      failed_when: kcli_job_result.rc not in [0,1]
+      failed_when: |-
+        kcli_job_result.stderr != ''
 
     - name: Show installed cluster
       changed_when: false

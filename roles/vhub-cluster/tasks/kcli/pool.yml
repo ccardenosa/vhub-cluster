@@ -27,11 +27,13 @@
 
   - name: Create KCLI image pool
     become: true
-    when: image_pool_folder.stat.islnk is not defined
     ansible.builtin.shell: |-
-      echo "Creating Libvirt default pool..."
-      mkdir -pv {{libvirt.pool.path}}
-      kcli create pool -p {{libvirt.pool.path}} {{libvirt.pool.name}}
+      kcli list pool | grep '{{libvirt.pool.name}}.*{{libvirt.pool.path | replace("~", "") }}' > /dev/null
+      if [ $? -ne 0 ];then
+        echo "Creating Libvirt default pool..."
+        mkdir -pv {{libvirt.pool.path}}
+        kcli create pool -p {{libvirt.pool.path}} {{libvirt.pool.name}}
+      fi
 
   # $ ansible-galaxy collection install ansible.posix
   - name: Set ACL information to image pool folder
