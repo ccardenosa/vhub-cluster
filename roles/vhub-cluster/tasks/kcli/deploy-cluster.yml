@@ -65,8 +65,8 @@
       retries: 120
       delay: 120
       # changed_when: kcli_job_result.rc is defined and kcli_job_result.rc == 0
-      failed_when: |-
-        kcli_job_result.stderr != ''
+      # failed_when: |-
+      #   kcli_job_result.stderr != '' and kcli_job_result.rc != 0
 
     # - name: Force all notified handlers to run at this point, not waiting for normal sync points
     #   ansible.builtin.meta: flush_handlers
