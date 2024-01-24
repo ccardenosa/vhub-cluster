@@ -18,6 +18,7 @@
     - rollback
   loop:
     - kcli/deploy-cluster.yml
+    - kcli/dnsmasq.yml
     - kcli/networks.yml
     - kcli/pool.yml
   loop_control:
@@ -28,6 +29,7 @@
   loop:
     - kcli/pool.yml
     - kcli/networks.yml
+    - kcli/dnsmasq.yml
     - kcli/ssh-keys.yml
     - kcli/deploy-cluster.yml
     - kcli/get-cluster-credentials.yml

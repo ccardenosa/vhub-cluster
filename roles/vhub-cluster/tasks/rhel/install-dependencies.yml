@@ -9,6 +9,7 @@
         - libvirt
         - libvirt-daemon-driver-qemu
         - qemu-kvm
+        - virt-viewer
       state: present
 
   - name: Make sure libvirt service unit is running

@@ -11,6 +11,9 @@
       register: del_cluster_ret
       changed_when: del_cluster_ret.stdout != ''
 
+    # - name: Clean up generated dnsmasq drop-in files
+    #   ansible.builtin.include_tasks: ./dnsmasq.yml
+
 - name: Deploy openshift cluster
   block:
 
@@ -51,6 +54,9 @@
       register: kcli_cluster
       changed_when: false
 
+    # - name: Generate dnsmasq drop-in files
+    #   ansible.builtin.include_tasks: ./dnsmasq.yml
+
     - name: Check cluster installation progess
       async_status:
         jid: "{{kcli_cluster.ansible_job_id}}"
@@ -58,9 +64,12 @@
       until: kcli_job_result.finished
       retries: 120
       delay: 120
-      changed_when: kcli_job_result.rc == 0
+      # changed_when: kcli_job_result.rc is defined and kcli_job_result.rc == 0
       failed_when: |-
         kcli_job_result.stderr != ''
+
+    # - name: Force all notified handlers to run at this point, not waiting for normal sync points
+    #   ansible.builtin.meta: flush_handlers
 
     - name: Show installed cluster
       changed_when: false

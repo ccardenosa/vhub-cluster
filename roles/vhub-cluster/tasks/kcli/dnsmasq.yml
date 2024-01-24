@@ -1,0 +1,89 @@
+---
+- name: Delete dnsmasq drop-in files
+  become: true
+  when: dnsmasq.drop_in_files is defined and
+        ('rollback' in ansible_run_tags)
+  tags:
+    - rollback
+  block:
+
+    - name: Select handler
+      ansible.builtin.set_fact:
+        handler_to_use: |-
+          {%- if dnsmasq.use_nm_pluging is defined and dnsmasq.use_nm_pluging -%}
+          Restart NetworkManager
+          {%- else -%}
+          Restart dnsmasq
+          {%- endif -%}
+
+    - name: Deleting dnsmasq drop-in files
+      ansible.builtin.file:
+        path: "{{item}}"
+        state: absent
+      loop:
+        - "/etc/NetworkManager/conf.d/00-use-dnsmasq.conf"
+      notify:
+        - "{{handler_to_use}}"
+
+    - name: Deleting dnsmasq drop-in files
+      when: drop_in.path is defined
+      ansible.builtin.file:
+        path: "{{drop_in.path}}"
+        state: absent
+      loop: "{{dnsmasq.drop_in_files}}"
+      loop_control:
+        loop_var: drop_in
+      notify:
+        - "{{handler_to_use}}"
+
+    - name: Cleanning /etc/hosts file
+      when: kcli.parameters.cluster is defined and
+            kcli.parameters.domain is defined
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        state: absent
+        regexp: '{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}'
+      notify:
+        - "{{handler_to_use}}"
+
+- name: Create dnsmasq drop-in file
+  when: dnsmasq.drop_in_files is defined and
+        ('rollback' not in ansible_run_tags)
+  become: true
+  block:
+
+    - name: Select handler
+      ansible.builtin.set_fact:
+        handler_to_use: |-
+          {%- if dnsmasq.use_nm_pluging is defined and dnsmasq.use_nm_pluging -%}
+          Restart NetworkManager
+          {%- else -%}
+          Restart dnsmasq
+          {%- endif -%}
+
+    - name: Setup NetworkManager dnsmasq plugin
+      when: dnsmasq.use_nm_pluging is defined and
+            dnsmasq.use_nm_pluging
+      ansible.builtin.copy:
+        dest: "/etc/NetworkManager/conf.d/00-use-dnsmasq.conf"
+        content: |
+          # /etc/NetworkManager/conf.d/00-use-dnsmasq.conf
+          #
+          # This enabled the dnsmasq plugin.
+          [main]
+          dns=dnsmasq
+      notify:
+        - "{{handler_to_use}}"
+
+    - name: Creating dropin file
+      ansible.builtin.copy:
+        dest: "{{drop_in.path}}"
+        content: "{{drop_in.content}}"
+      loop: "{{dnsmasq.drop_in_files}}"
+      loop_control:
+        loop_var: drop_in
+      notify:
+        - "{{handler_to_use}}"
+
+    - name: Force all notified handlers to run at this point, not waiting for normal sync points
+      ansible.builtin.meta: flush_handlers

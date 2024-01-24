@@ -10,15 +10,20 @@
 #   size: 2048
 #######################################################
 # Set the default libvirt pool to use.
-# Note: KCLI seems to select always the default pool
-# when "kcli create cluster openshift" command is used.
-# Do not use another pool but the one you have named
-# 'default'.
+# Clean mode:
+# if 'also_default' is false, the default pool won't
+# be removed upon running with '--tags rollback'
+# if 'remove_files' is false, files that belongs to a
+# pool won't be removed upon running with
+# '--tags rollback'
 #######################################################
 libvirt:
   pool:
     name: default
     path: /var/lib/libvirt/images
+    clean_mode:
+      also_default: false
+      remove_files: false
 #######################################################
 # Use the below parameters as a example.
 # The comprehensive list of values can be found here:
@@ -82,6 +87,35 @@ libvirt:
 # oc:
 #   url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
 #   dest: /usr/bin
+#######################################################
+# When defined, it generate dnsmasq drop-in file
+# to be used along with the default dnsmasq instance
+# running in the host machine
+# [https://docs.fedoraproject.org/en-US/fedora-server/administration/dnsmasq/]
+#######################################################
+# dnsmasq:
+#   use_nm_pluging: true
+#   drop_in_files:
+#     - path: /etc/NetworkManager/dnsmasq.d/70-{{kcli.parameters.cluster}}.conf
+#       content: |
+#         # /etc/NetworkManager/dnsmasq.d/70-{{kcli.parameters.cluster}}.conf
+#         #
+#         # This file directs dnsmasq to forward any request to resolve
+#         # names under the .custom-dns.lab domain to 172.16.55.1, a
+#         # custom DNS server.
+#         server=/custem-dns.lab/172.16.55.1
+#     - path: /etc/NetworkManager/dnsmasq.d/70-{{kcli.parameters.cluster}}.conf
+#       content: |
+#         # /etc/NetworkManager/dnsmasq.d/70-{{kcli.parameters.cluster}}.conf
+#         #
+#         # This file sets up the local lablab domain and
+#         # defines some aliases and a wildcard.
+#         local=/example.lab/
+#         # The below defines a Wildcard DNS Entry.
+#         address=/.example.lab/192.168.44.44
+#         # Below I define some host names.  I also pull in
+#         address=/openshift.example.lab/192.168.44.120
+#         address=/openshift-int.example.lab/192.168.44.120
 #######################################################
 # KCLI default credentials are the below ones.
 # These files are read after cluster deployment is

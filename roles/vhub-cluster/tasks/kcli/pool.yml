@@ -6,12 +6,16 @@
     - rollback
   block:
 
-    - name: Deleting libvirt pool (if this is NOT the 'default' pool)
+    - name: Deleting libvirt pool
       become: true
-      when: libvirt.pool.name != 'default'
+      when: libvirt.pool.name != 'default' or
+            (libvirt.pool.clean_mode.also_default is defined and
+             libvirt.pool.clean_mode.also_default)
       ansible.builtin.shell: |-
         kcli delete pool {{libvirt.pool.name}} --yes
+        {% if libvirt.pool.clean_mode.remove_files is defined and libvirt.pool.clean_mode.remove_files %}
         rm -fr {{libvirt.pool.path}}
+        {% endif %}
       register: del_pool_ret
       changed_when: del_pool_ret.stdout != ''
 
@@ -41,10 +45,13 @@
     when: ansible_user_id != 'root'
     ansible.posix.acl:
       path: "{{libvirt.pool.path}}"
-      entity: "{{ ansible_user_id }}"
+      entity: "{{item}}"
       etype: user
       permissions: rwx
       state: present
+    loop:
+      - "{{ansible_user_id}}"
+      - qemu
 
   - name: Show KCLI image pool
     changed_when: false

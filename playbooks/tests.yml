@@ -12,6 +12,7 @@
           # type: bridge
           # bridge: true
           # bridgename: vhub-net-br
+          # dhcp: false
           # macvtap: true
           # nic: "{{ lookup('ansible.builtin.env', 'CLUSTER_BRIDGE_NIC') }}"
           type: network
@@ -27,6 +28,8 @@
         pool: "{{libvirt.pool.name}}"
         nets:
           - vhub-net
+          # - baremetal
+          # - provisioning
         keys:
           - "{{ lookup('ansible.builtin.env', 'CLUSTER_SSH_PUB_KEY') }}"
         ctlplanes: 3
