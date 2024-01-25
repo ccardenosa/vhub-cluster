@@ -9,6 +9,8 @@
       - 'ansible_user_id'
 
 - name: Install dependencies
+  when: install_depencencies is defined and
+        install_depencencies
   ansible.builtin.include_tasks: install-dependencies.yml
 
 - name: Clean up at Bastion node

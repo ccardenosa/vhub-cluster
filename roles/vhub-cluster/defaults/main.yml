@@ -1,6 +1,13 @@
 ---
 # defaults file for vhub-cluster
 #######################################################
+# If you want that the role try to install KCLI
+# dependencies (Fedora, RHEL or CentOS should be
+# supported by now), set to true the following
+# variable:
+#######################################################
+# install_depencencies: false
+#######################################################
 # Comment out these lines to autogenerate a pair of
 # SSH both public and private keys to be used during
 # cluster deployment.
