@@ -1,0 +1,45 @@
+all:
+  children:
+    slcm_nokia_cloud_ran_bastion:
+      hosts:
+        smb-node:
+          ansible_host: "{{ lookup('ansible.builtin.env', 'BASTION_SMB_HOST') }}"
+          ansible_user: "{{ lookup('ansible.builtin.env', 'BASTION_SMB_USER_NAME') }}"
+          libvirt:
+            pool:
+              name: "{{ lookup('ansible.builtin.env', 'CLUSTER_NAME') }}"
+              path: "{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_POOL_PATH') }}"
+          kcli:
+            networks:
+              - name: vhub-net
+                type: network
+                domain: "{{ lookup('ansible.builtin.env', 'CLUSTER_DOMAIN') }}"
+                cidr: "{{ lookup('ansible.builtin.env', 'CLUSTER_NET_CIDR_IPv4') }}"
+                gateway: "{{ lookup('ansible.builtin.env', 'CLUSTER_NET_CIDR_IPv4') | ansible.utils.ipaddr('1') | ansible.utils.ipaddr('address') }}"
+                secondary_cidr: "{{ lookup('ansible.builtin.env', 'CLUSTER_NET_CIDR_IPv6') }}"
+            clusters:
+            - type: openshift
+              force_installation: true
+              parameters:
+                cluster: "{{ lookup('ansible.builtin.env', 'CLUSTER_NAME') }}"
+                version: "{{ lookup('ansible.builtin.env', 'CLUSTER_VERSION') }}"
+                tag: "{{ lookup('ansible.builtin.env', 'CLUSTER_TAG') }}"
+                domain: "{{ lookup('ansible.builtin.env', 'CLUSTER_DOMAIN') }}"
+                pool: "{{libvirt.pool.name}}"
+                nets:
+                  - vhub-net
+                keys:
+                  - "{{ lookup('ansible.builtin.env', 'CLUSTER_SSH_PUB_KEY') }}"
+                ctlplanes: 3
+                workers: 0
+                memory: 32000
+                numcpus: 16
+                disks:
+                  - 200
+                  - 200
+                base64_pull_secret: "{{ lookup('ansible.builtin.env', 'CLUSTER_B64_PULL_SECRET') }}"
+                apps:
+                  - local-storage-operator
+                  - openshift-gitops-operator
+                  - advanced-cluster-management
+                  - topology-aware-lifecycle-manager

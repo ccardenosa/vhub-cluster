@@ -1,0 +1,52 @@
+all:
+  children:
+    slcm_nokia_cloud_ran_bastion:
+      hosts:
+        bastion-vhub-node:
+          ansible_host: "{{ lookup('ansible.builtin.env', 'BASTION_VHUB_HOST') }}"
+          libvirt:
+            pool:
+              name: "{{ lookup('ansible.builtin.env', 'CLUSTER_NAME') }}"
+              path: "{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_POOL_PATH') }}"
+          kcli:
+            clusters:
+            - type: openshift
+              force_installation: true
+              parameters:
+                cluster: "{{ lookup('ansible.builtin.env', 'CLUSTER_NAME') }}"
+                version: "{{ lookup('ansible.builtin.env', 'CLUSTER_VERSION') }}"
+                tag: "{{ lookup('ansible.builtin.env', 'CLUSTER_TAG') }}"
+                domain: "{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_DOMAIN') }}"
+                pool: "{{libvirt.pool.name}}"
+                nets:
+                  - baremetal
+                  - provisioning
+                keys:
+                  - "{{ lookup('ansible.builtin.env', 'CLUSTER_SSH_PUB_KEY') }}"
+                ctlplanes: 3
+                workers: 0
+                memory: 32000
+                numcpus: 16
+                disks:
+                  - 200
+                  - 200
+                base64_pull_secret: "{{ lookup('ansible.builtin.env', 'CLUSTER_B64_PULL_SECRET') }}"
+                api_ip: "{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_API_IP') }}"
+                ingress_ip: "{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_INGRESS_IP') }}"
+                apps:
+                  - local-storage-operator
+                  - openshift-gitops-operator
+                  - advanced-cluster-management
+                  - topology-aware-lifecycle-manager
+          dnsmasq:
+            drop_in_files:
+              - path: /etc/dnsmasq.d/70-{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}.conf
+                content: |
+                  # /etc/dnsmasq.d/70-{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}.conf
+                  # This file sets up the local OCP cluster domain and defines some aliases and a wildcard.
+                  local=/{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}/
+                  # OCP cluster API
+                  address=/api.{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}/{{kcli.parameters.api_ip}}
+                  address=/api-int.{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}/{{kcli.parameters.api_ip}}
+                  # OCP cluster INGRESS
+                  address=/.{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}/{{kcli.parameters.ingress_ip}}
