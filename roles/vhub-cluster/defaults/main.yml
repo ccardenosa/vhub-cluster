@@ -152,7 +152,7 @@ libvirt:
 # In any case, the credentials will still be available
 # in the shown host node path below.
 #######################################################
-credentials:
-  clusters_details: ~/.kcli/clusters
-  kubeconfig: auth/kubeconfig
-  kubeadmin_password: auth/kubeadmin-password
+# credentials:
+#   clusters_details: ~/.kcli/clusters
+#   kubeconfig: auth/kubeconfig
+#   kubeadmin_password: auth/kubeadmin-password
