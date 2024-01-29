@@ -38,6 +38,19 @@ all:
                   - openshift-gitops-operator
                   - advanced-cluster-management
                   - topology-aware-lifecycle-manager
+                vmrules:
+                - vhub-ocp-ctlplane-0:
+                    nets:
+                      - name: baremetal
+                        mac: "{{ lookup('ansible.builtin.env', 'CLUSTER_BRIDGE_NIC_MAC_0') }}"
+                - vhub-ocp-ctlplane-1:
+                    nets:
+                      - name: baremetal
+                        mac: "{{ lookup('ansible.builtin.env', 'CLUSTER_BRIDGE_NIC_MAC_1') }}"
+                - vhub-ocp-ctlplane-2:
+                    nets:
+                      - name: baremetal
+                        mac: "{{ lookup('ansible.builtin.env', 'CLUSTER_BRIDGE_NIC_MAC_2') }}"
           dnsmasq:
             drop_in_files:
               - path: /etc/dnsmasq.d/70-{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}.conf

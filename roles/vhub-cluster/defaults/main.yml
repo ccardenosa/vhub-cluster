@@ -129,15 +129,30 @@ libvirt:
 #         address=/openshift.example.lab/192.168.44.120
 #         address=/openshift-int.example.lab/192.168.44.120
 #######################################################
+# NOTE: Do not change these default values
 # KCLI default credentials are the below ones.
 # These files are read after cluster deployment is
 # done and store as ansible_facts into the following
 # variables to be used by next playbooks:
 #
-# - kubeconfig
-# - b64_kubeconfig
-# - kubeadmin_password
+# credentials:
+#   <cluster_name_0>:
+#     kubeconfig: ...
+#     b64_kubeconfig: ...
+#     kubeadmin_password: ...
+#   ...
+#   <cluster_name_N>:
+#     kubeconfig: ...
+#     b64_kubeconfig: ...
+#     kubeadmin_password: ...
+#
+# Uncomment (or define again) these lines below to
+# get those variables be loaded after cluster
+# installation is done.
+# In any case, the credentials will still be available
+# in the shown host node path below.
 #######################################################
-k8s:
-  kubeconfig: ~/.kcli/clusters/{{kcli.parameters.cluster}}/auth/kubeconfig
-  kubeadmin_password: ~/.kcli/clusters/{{kcli.parameters.cluster}}/auth/kubeadmin-password
+credentials:
+  clusters_details: ~/.kcli/clusters
+  kubeconfig: auth/kubeconfig
+  kubeadmin_password: auth/kubeadmin-password
