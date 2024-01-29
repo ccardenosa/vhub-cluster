@@ -51,15 +51,19 @@ all:
                     nets:
                       - name: baremetal
                         mac: "{{ lookup('ansible.builtin.env', 'CLUSTER_BRIDGE_NIC_MAC_2') }}"
+          credentials:
+            clusters_details: ~/.kcli/clusters
+            kubeconfig: auth/kubeconfig
+            kubeadmin_password: auth/kubeadmin-password
           dnsmasq:
             drop_in_files:
-              - path: /etc/dnsmasq.d/70-{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}.conf
+              - path: /etc/dnsmasq.d/70-{{ lookup('ansible.builtin.env', 'CLUSTER_NAME') }}.{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_DOMAIN') }}.conf
                 content: |
-                  # /etc/dnsmasq.d/70-{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}.conf
+                  # /etc/dnsmasq.d/70-{{ lookup('ansible.builtin.env', 'CLUSTER_NAME') }}.{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_DOMAIN') }}.conf
                   # This file sets up the local OCP cluster domain and defines some aliases and a wildcard.
-                  local=/{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}/
+                  local=/{{ lookup('ansible.builtin.env', 'CLUSTER_NAME') }}.{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_DOMAIN') }}/
                   # OCP cluster API
-                  address=/api.{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}/{{kcli.parameters.api_ip}}
-                  address=/api-int.{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}/{{kcli.parameters.api_ip}}
+                  address=/api.{{ lookup('ansible.builtin.env', 'CLUSTER_NAME') }}.{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_DOMAIN') }}/{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_API_IP') }}
+                  address=/api-int.{{ lookup('ansible.builtin.env', 'CLUSTER_NAME') }}.{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_DOMAIN') }}/{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_API_IP') }}
                   # OCP cluster INGRESS
-                  address=/.{{kcli.parameters.cluster}}.{{kcli.parameters.domain}}/{{kcli.parameters.ingress_ip}}
+                  address=/.apps.{{ lookup('ansible.builtin.env', 'CLUSTER_NAME') }}.{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_DOMAIN') }}/{{ lookup('ansible.builtin.env', 'CLUSTER_NOKIA_CLOUD_RAN_INGRESS_IP') }}
