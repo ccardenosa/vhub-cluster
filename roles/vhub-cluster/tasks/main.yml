@@ -26,7 +26,7 @@
   loop_control:
     loop_var: task
 
-- name: Set up kcli at Bastion node
+- name: Set up Bastion node
   ansible.builtin.include_tasks: "{{task}}"
   loop:
     - kcli/pool.yml
