@@ -38,6 +38,7 @@ all:
                   - openshift-gitops-operator
                   - advanced-cluster-management
                   - topology-aware-lifecycle-manager
+                  - multicluster-engine
                 vmrules:
                 - vhub-ocp-ctlplane-0:
                     nets:

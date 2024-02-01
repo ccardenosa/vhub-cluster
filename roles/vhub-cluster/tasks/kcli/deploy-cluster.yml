@@ -76,10 +76,12 @@
         kcli list cluster
         kcli list plan
         kcli list vms
-        which oc 2> /dev/null && \
+        which oc
+        if [ $? -eq 0 ];then
           oc \
             --kubeconfig ~/.kcli/clusters/{{cluster.parameters.cluster}}/auth/kubeconfig \
             get node -owide
+        fi
       loop: "{{kcli.clusters}}"
       loop_control:
         loop_var: cluster

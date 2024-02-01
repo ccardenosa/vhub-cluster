@@ -43,3 +43,4 @@ all:
                   - openshift-gitops-operator
                   - advanced-cluster-management
                   - topology-aware-lifecycle-manager
+                  - multicluster-engine
