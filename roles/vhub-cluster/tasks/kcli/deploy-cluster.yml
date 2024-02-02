@@ -6,7 +6,7 @@
     - rollback
   block:
 
-    - name: Deleting '{{cluster.parameters.cluster}}' cluster
+    - name: Deleting cluster
       ansible.builtin.shell: |-
         kcli delete cluster {{cluster.parameters.cluster}} --yes
       register: del_cluster_ret
