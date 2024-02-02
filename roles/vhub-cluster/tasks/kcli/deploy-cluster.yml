@@ -1,6 +1,7 @@
 ---
 - name: Rollback openshift cluster
-  when: "'rollback' in ansible_run_tags"
+  when: kcli is defined and
+        'rollback' in ansible_run_tags
   tags:
     - rollback
   block:
@@ -15,6 +16,7 @@
         loop_var: cluster
 
 - name: Deploy cluster
+  when: kcli is defined
   block:
 
     - name: Create temporary kcli cluster parameter file
