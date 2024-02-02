@@ -24,11 +24,6 @@
         libvirt.pool.path is defined
   block:
 
-  - name: Determine if pool folder exists
-    ansible.builtin.stat:
-      path: "{{libvirt.pool.path}}"
-    register: image_pool_folder
-
   - name: Create KCLI image pool
     become: true
     ansible.builtin.shell: |-
@@ -39,12 +34,37 @@
         kcli create pool -p {{libvirt.pool.path}} {{libvirt.pool.name}}
       fi
 
+  - name: Determine if {{libvirt.pool.path}} pool folder exists
+    ansible.builtin.stat:
+      path: "{{libvirt.pool.path}}"
+    register: image_pool_folder
+
   # $ ansible-galaxy collection install ansible.posix
   - name: Set ACL information to image pool folder
     become: true
-    when: ansible_user_id != 'root'
+    when: image_pool_folder.stat.exists and
+          ansible_user_id != 'root'
     ansible.posix.acl:
       path: "{{libvirt.pool.path}}"
+      entity: "{{item}}"
+      etype: user
+      permissions: rwx
+      state: present
+    loop:
+      - "{{ansible_user_id}}"
+      - qemu
+
+  - name: Determine if /var/lib/libvirt/images pool folder exists
+    ansible.builtin.stat:
+      path: /var/lib/libvirt/images
+    register: image_pool_folder
+
+  - name: Set ACL information to image pool folder
+    become: true
+    when: image_pool_folder.stat.exists and
+          ansible_user_id != 'root'
+    ansible.posix.acl:
+      path: /var/lib/libvirt/images
       entity: "{{item}}"
       etype: user
       permissions: rwx
