@@ -106,7 +106,7 @@ libvirt:
 # [https://docs.fedoraproject.org/en-US/fedora-server/administration/dnsmasq/]
 #######################################################
 # dnsmasq:
-#   use_nm_pluging: true
+#   use_nm_plugin: true
 #   drop_in_files:
 #     - path: /etc/NetworkManager/dnsmasq.d/70-{{kcli.parameters.cluster}}.conf
 #       content: |
@@ -115,7 +115,7 @@ libvirt:
 #         # This file directs dnsmasq to forward any request to resolve
 #         # names under the .custom-dns.lab domain to 172.16.55.1, a
 #         # custom DNS server.
-#         server=/custem-dns.lab/172.16.55.1
+#         server=/custom-dns.lab/172.16.55.1
 #     - path: /etc/NetworkManager/dnsmasq.d/70-{{kcli.parameters.cluster}}.conf
 #       content: |
 #         # /etc/NetworkManager/dnsmasq.d/70-{{kcli.parameters.cluster}}.conf

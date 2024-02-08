@@ -10,7 +10,7 @@
     - name: Select handler
       ansible.builtin.set_fact:
         handler_to_use: |-
-          {%- if dnsmasq.use_nm_pluging is defined and dnsmasq.use_nm_pluging -%}
+          {%- if dnsmasq.use_nm_plugin is defined and dnsmasq.use_nm_plugin -%}
           Restart NetworkManager
           {%- else -%}
           Restart dnsmasq
@@ -55,15 +55,15 @@
     - name: Select handler
       ansible.builtin.set_fact:
         handler_to_use: |-
-          {%- if dnsmasq.use_nm_pluging is defined and dnsmasq.use_nm_pluging -%}
+          {%- if dnsmasq.use_nm_plugin is defined and dnsmasq.use_nm_plugin -%}
           Restart NetworkManager
           {%- else -%}
           Restart dnsmasq
           {%- endif -%}
 
     - name: Setup NetworkManager dnsmasq plugin
-      when: dnsmasq.use_nm_pluging is defined and
-            dnsmasq.use_nm_pluging
+      when: dnsmasq.use_nm_plugin is defined and
+            dnsmasq.use_nm_plugin
       ansible.builtin.copy:
         dest: "/etc/NetworkManager/conf.d/00-use-dnsmasq.conf"
         content: |
