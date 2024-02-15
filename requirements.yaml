@@ -1,7 +1,7 @@
 ---
 collections:
-  - ansible.utils
   - ansible.posix
-  - containers.podman
-  - karmab.kcli
   - community.crypto
+  # - ansible.utils
+  # - containers.podman
+  # - karmab.kcli

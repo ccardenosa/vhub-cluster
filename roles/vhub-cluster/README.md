@@ -54,7 +54,14 @@ These files are read after cluster deployment is done and store as `ansible_fact
 Dependencies
 ------------
 
-No extra Galaxy roles are required.
+Required Extra Galaxy roles:
+
+```
+ ---
+ collections:
+   - ansible.posix
+   - community.crypto
+```
 
 Example Playbook
 ----------------
